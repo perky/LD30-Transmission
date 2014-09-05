@@ -7,7 +7,8 @@ public class City : MonoBehaviour
     public static int LAYER = 9;
     public static int SATS_ONLY_MASK = (1 << Satellite.LAYER);
     public static int IGNORE_CITIES_MASK = ~(1 << City.LAYER);
-    public static int CREDIT_PER_CONNECTED_CITY = 5;
+    public static int IGNORE_CITIES_AND_SHADOWS_MASK = ~((1 << City.LAYER) | (1 << 12));
+    public static int CREDIT_PER_CONNECTED_CITY = 10;
     public static City[] cities;
 
     public int connectedCities;
@@ -61,7 +62,7 @@ public class City : MonoBehaviour
         Collider2D[] satColliders = Physics2D.OverlapCircleAll(rigidbody2D.position, circleCollider.radius, SATS_ONLY_MASK);
         foreach (var satCollider in satColliders)
         {
-            RaycastHit2D hit = Physics2D.Linecast(rigidbody2D.position, satCollider.rigidbody2D.position, IGNORE_CITIES_MASK);
+            RaycastHit2D hit = Physics2D.Linecast(rigidbody2D.position, satCollider.rigidbody2D.position, IGNORE_CITIES_AND_SHADOWS_MASK);
             if (hit.collider == satCollider)
             {
                 var satConn = new SatConnection();
@@ -106,7 +107,7 @@ public class City : MonoBehaviour
         for (int i = 0; i < mySats.Count; i++)
         {
             Satellite sat = mySats[i];
-            if (otherSats.Contains(sat))
+            if (sat.bIsPowered && otherSats.Contains(sat))
             {
                 return true;
             }

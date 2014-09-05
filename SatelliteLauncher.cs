@@ -16,6 +16,17 @@ public class SatelliteLauncher : MonoBehaviour
     protected Satellite satellite;
     protected OrbitalMovement orbitalMovement;
 
+    private Vector3 lastMousePosition;
+    private AudioSource audio;
+
+    void Awake()
+    {
+        var sAudioPrefab = Resources.Load("SatelliteLauncherAudio") as GameObject;
+        var sAudio = Instantiate(sAudioPrefab) as GameObject;
+        sAudio.transform.parent = transform;
+        this.audio = sAudio.GetComponent<AudioSource>();
+    }
+
     void OnMouseDown()
     {
         bIsActive = true;
@@ -31,6 +42,8 @@ public class SatelliteLauncher : MonoBehaviour
         orbitalMovement = satellite.GetComponent<OrbitalMovement>();
         orbitalMovement.parent = transform;
         orbitalMovement.enabled = false;
+
+        audio.Play();
     }
 
     void Update()
@@ -52,9 +65,20 @@ public class SatelliteLauncher : MonoBehaviour
             orbitalMovement.DrawOrbit();
             satellite.transform.position = mousePos;
 
+            if ((Input.mousePosition - lastMousePosition).sqrMagnitude > 0)
+            {
+                audio.mute = false;
+            }
+            else
+            {
+                audio.mute = true;
+            }
+            lastMousePosition = Input.mousePosition;
+
             if (Input.GetMouseButtonUp(0))
             {
                Time.timeScale = 1;
+               audio.Stop();
                Launch();
             }
         }

@@ -16,6 +16,7 @@ public class Satellite : MonoBehaviour
     public float updateInterval;
     public LineRenderPool linePool;
 
+    public bool bIsPowered;
     protected float updateAccumulator;
     protected List<SatConnection> satConns = new List<SatConnection>();
     protected Dictionary<Satellite, LineRenderer> lineDict = new Dictionary<Satellite, LineRenderer>();
@@ -23,6 +24,7 @@ public class Satellite : MonoBehaviour
     void Start()
     {
         linePool.Init(100);
+        bIsPowered = true;
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -43,15 +45,19 @@ public class Satellite : MonoBehaviour
         if (updateAccumulator >= updateInterval)
         {
             updateAccumulator = 0;
-            UpdateSatList();
+            satConns.Clear();
+            if (bIsPowered)
+            {
+                UpdateSatList();
+            }
             CreditsController.SubtractCredits(maintananceCost);
         }
         UpdateAllSatVisibility();
+        bIsPowered = true;
     }
 
     void UpdateSatList()
     {
-        satConns = new List<SatConnection>();
         Satellite[] tmpSatellites = GameObject.FindObjectsOfType<Satellite>();
         foreach (var sat in tmpSatellites)
         {
@@ -121,6 +127,16 @@ public class Satellite : MonoBehaviour
             lineDict.Remove(sat);
             linePool.ReleaseLine(line);
         }
+    }
+
+    void OnEnterShadow()
+    {
+        bIsPowered = false;
+    }
+
+    void OnExitShadow()
+    {
+        bIsPowered = true;
     }
 
     public List<Satellite> GetConnectedSats()
